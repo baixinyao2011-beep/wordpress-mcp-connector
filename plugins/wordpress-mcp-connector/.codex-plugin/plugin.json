@@ -1,0 +1,34 @@
+{
+  "name": "wordpress-mcp-connector",
+  "version": "0.1.0",
+  "description": "Local WordPress MCP connector with a web management dashboard.",
+  "author": {
+    "name": "Local WordPress MCP Connector"
+  },
+  "homepage": "http://127.0.0.1:8787",
+  "repository": "https://github.com/baixinyao2011-beep/wordpress-mcp-connector",
+  "license": "MIT",
+  "keywords": [
+    "wordpress",
+    "mcp",
+    "content"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "WordPress MCP Connector",
+    "shortDescription": "Manage local WordPress MCP connections.",
+    "longDescription": "Codex plugin companion for the local WordPress MCP connector. Credentials stay in the local encrypted connector store and are not embedded in the plugin manifest. Open the local manager at http://127.0.0.1:8787 to add sites, update credentials, test endpoints, manage permissions, and copy MCP config.",
+    "developerName": "Local WordPress MCP Connector",
+    "category": "Productivity",
+    "capabilities": [
+      "MCP",
+      "WordPress",
+      "Content"
+    ],
+    "defaultPrompt": [
+      "Open the WordPress MCP settings dashboard.",
+      "List the configured WordPress MCP tools."
+    ],
+    "brandColor": "#1F7A53"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "personal-wordpress",
+  "interface": {
+    "displayName": "Personal WordPress"
+  },
+  "plugins": [
+    {
+      "name": "wordpress-mcp-connector",
+      "source": {
+        "source": "local",
+        "path": "./plugins/wordpress-mcp-connector"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

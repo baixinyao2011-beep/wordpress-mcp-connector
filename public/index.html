@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WordPress MCP 连接器</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="auth-shell" id="authShell">
+      <form class="auth-card" id="authForm" autocomplete="off">
+        <p class="eyebrow" id="authModeLabel">本地登录</p>
+        <h1 id="authTitle">WordPress MCP 连接器</h1>
+        <p class="auth-copy" id="authCopy">登录后才能管理站点授权、权限开关和 MCP 配置。</p>
+        <label>
+          <span>用户名</span>
+          <input id="loginUsernameInput" type="text" autocomplete="username" required />
+        </label>
+        <label>
+          <span>密码</span>
+          <input id="loginPasswordInput" type="password" autocomplete="current-password" required />
+        </label>
+        <button class="primary-button" id="authSubmitButton" type="submit">登录</button>
+      </form>
+    </div>
+
+    <div class="app-shell hidden" id="appShell">
+      <aside class="sidebar">
+        <header class="sidebar-header">
+          <div>
+            <p class="eyebrow">本机 MCP</p>
+            <h1>WordPress MCP 连接器</h1>
+          </div>
+          <button class="icon-button" id="refreshButton" type="button" title="刷新列表" aria-label="刷新列表">
+            <span aria-hidden="true">↻</span>
+          </button>
+        </header>
+
+        <div class="search-row">
+          <input id="searchInput" type="search" placeholder="搜索站点" autocomplete="off" />
+          <button id="newSiteButton" type="button">新建</button>
+        </div>
+
+        <div class="site-list" id="siteList" aria-live="polite"></div>
+      </aside>
+
+      <main class="workspace">
+        <section class="topbar">
+          <div>
+            <p class="eyebrow" id="modeLabel">新增连接</p>
+            <h2 id="pageTitle">添加一个 WordPress MCP 站点</h2>
+          </div>
+          <div class="topbar-actions">
+            <button class="ghost-button" id="logoutButton" type="button">退出登录</button>
+            <a class="ghost-button disabled" id="adminLink" href="#" target="_blank" rel="noreferrer">打开后台</a>
+            <button class="ghost-button" id="testButton" type="button">测试 Endpoint</button>
+            <button class="primary-button" id="configButton" type="button">复制配置</button>
+          </div>
+        </section>
+
+        <section class="status-strip" id="statusStrip">
+          <div>
+            <span class="status-dot idle"></span>
+            <span id="statusText">MCP 客户端配置只引用本机启动器，密钥仍在本地加密库中。</span>
+          </div>
+          <span id="statusMeta">等待保存</span>
+        </section>
+
+        <section class="editor-grid">
+          <form class="editor" id="siteForm" autocomplete="off">
+            <div class="form-row two">
+              <label>
+                <span>站点名称</span>
+                <input id="nameInput" name="name" type="text" placeholder="公司官网" required />
+              </label>
+              <label>
+                <span>MCP 名称</span>
+                <input id="serverNameInput" name="serverName" type="text" placeholder="wordpress-company" />
+              </label>
+            </div>
+
+            <div class="form-row two">
+              <label>
+                <span>网站地址</span>
+                <input id="siteUrlInput" name="siteUrl" type="url" placeholder="https://example.com" required />
+              </label>
+              <label>
+                <span>MCP Endpoint</span>
+                <input id="endpointUrlInput" name="endpointUrl" type="url" placeholder="https://example.com/wp-json/mcp/mcp-adapter-default-server" required />
+              </label>
+            </div>
+
+            <fieldset>
+              <legend>授权方式</legend>
+              <div class="segmented" role="radiogroup" aria-label="授权方式">
+                <label>
+                  <input type="radio" name="authMode" value="oauth" checked />
+                  <span>OAuth</span>
+                </label>
+                <label>
+                  <input type="radio" name="authMode" value="application-password" />
+                  <span>应用密码</span>
+                </label>
+                <label>
+                  <input type="radio" name="authMode" value="jwt" />
+                  <span>JWT</span>
+                </label>
+                <label>
+                  <input type="radio" name="authMode" value="custom-headers" />
+                  <span>Headers</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="auth-panels">
+              <div class="auth-panel" data-auth-panel="oauth">
+                <div class="inline-note">首次由 MCP 客户端启动时，会走浏览器授权；本工具不保存 OAuth 密码。</div>
+              </div>
+
+              <div class="auth-panel hidden" data-auth-panel="application-password">
+                <div class="form-row two">
+                  <label>
+                    <span>用户名</span>
+                    <input id="usernameInput" name="username" type="text" placeholder="wp-admin-user" autocomplete="off" />
+                  </label>
+                  <label>
+                    <span>应用密码</span>
+                    <div class="secret-field">
+                      <input id="passwordInput" name="password" type="password" placeholder="只在新增或更换时填写" autocomplete="new-password" />
+                      <button class="icon-button secret-toggle" type="button" data-target="passwordInput" title="显示或隐藏密钥" aria-label="显示或隐藏密钥">
+                        <span aria-hidden="true">◐</span>
+                      </button>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="auth-panel hidden" data-auth-panel="jwt">
+                <label>
+                  <span>JWT Token</span>
+                  <div class="secret-field">
+                    <input id="jwtInput" name="jwt" type="password" placeholder="只在新增或更换时填写" autocomplete="new-password" />
+                    <button class="icon-button secret-toggle" type="button" data-target="jwtInput" title="显示或隐藏密钥" aria-label="显示或隐藏密钥">
+                      <span aria-hidden="true">◐</span>
+                    </button>
+                  </div>
+                </label>
+              </div>
+
+              <div class="auth-panel hidden" data-auth-panel="custom-headers">
+                <label>
+                  <span>自定义 Headers</span>
+                  <textarea id="customHeadersInput" name="customHeaders" rows="4" placeholder='{"X-MCP-API-Key":"只在新增或更换时填写"}'></textarea>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-row two">
+              <label>
+                <span>WooCommerce Key</span>
+                <input id="wooKeyInput" name="wooKey" type="text" placeholder="可选" autocomplete="off" />
+              </label>
+              <label>
+                <span>WooCommerce Secret</span>
+                <div class="secret-field">
+                  <input id="wooSecretInput" name="wooSecret" type="password" placeholder="可选，只在新增或更换时填写" autocomplete="new-password" />
+                  <button class="icon-button secret-toggle" type="button" data-target="wooSecretInput" title="显示或隐藏密钥" aria-label="显示或隐藏密钥">
+                    <span aria-hidden="true">◐</span>
+                  </button>
+                </div>
+              </label>
+            </div>
+
+            <label>
+              <span>备注</span>
+  <textarea id="notesInput" name="notes" rows="3" placeholder="用途、负责人、权限范围"></textarea>
+            </label>
+
+            <fieldset class="backup-fieldset">
+              <legend>备份策略</legend>
+              <div class="form-row two">
+                <label>
+                  <span>策略</span>
+                  <select id="backupStrategySelect" name="backupStrategy"></select>
+                </label>
+                <label>
+                  <span>保留恢复点</span>
+                  <input id="backupRetentionInput" name="backupRetention" type="number" min="0" max="365" step="1" />
+                </label>
+              </div>
+              <div class="backup-options">
+                <label class="check-row">
+                  <input id="beforeWriteBackupInput" name="beforeWriteBackup" type="checkbox" />
+                  <span>写入或删除前先备份</span>
+                </label>
+                <label class="check-row">
+                  <input id="includeMediaCatalogInput" name="includeMediaCatalog" type="checkbox" />
+                  <span>包含媒体库清单</span>
+                </label>
+              </div>
+              <div class="backup-action-row">
+                <button class="ghost-button" id="runBackupButton" type="button">立即备份</button>
+                <span id="backupStrategyHint">等待保存站点</span>
+              </div>
+            </fieldset>
+
+            <fieldset class="permission-fieldset">
+              <legend>权限开关</legend>
+              <div class="permission-grid" id="permissionGrid"></div>
+              <div class="inline-note permission-note">
+                llms.txt、LiteSpeed 清缓存与本地 zip 安装需要先在 WordPress 后台安装并启用 companion plugin。
+                <a href="https://github.com/baixinyao2011-beep/wordpress-mcp-connector/tree/main/wordpress-plugin/wordpress-mcp-connector-companion" target="_blank" rel="noreferrer">打开 GitHub 下载地址</a>
+              </div>
+            </fieldset>
+
+            <div class="form-actions">
+              <button class="danger-button hidden" id="deleteButton" type="button">删除</button>
+              <div class="action-spacer"></div>
+              <button class="ghost-button" id="resetButton" type="button">清空</button>
+              <button class="primary-button" type="submit">保存连接</button>
+            </div>
+          </form>
+
+          <aside class="details-panel">
+            <div class="detail-block">
+              <p class="eyebrow">连接状态</p>
+              <dl>
+                <div>
+                  <dt>最近检测</dt>
+                  <dd id="lastChecked">暂无</dd>
+                </div>
+                <div>
+                  <dt>响应时间</dt>
+                  <dd id="latency">暂无</dd>
+                </div>
+                <div>
+                  <dt>授权</dt>
+                  <dd id="authSummary">暂无</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="detail-block">
+              <p class="eyebrow">备份状态</p>
+              <dl>
+                <div>
+                  <dt>当前策略</dt>
+                  <dd id="backupStrategyStatus">暂无</dd>
+                </div>
+                <div>
+                  <dt>最近备份</dt>
+                  <dd id="lastBackupStatus">暂无</dd>
+                </div>
+              </dl>
+              <div class="backup-list" id="backupList"></div>
+            </div>
+
+            <div class="detail-block">
+              <p class="eyebrow">客户端配置</p>
+              <pre id="configPreview">{}</pre>
+            </div>
+
+            <div class="detail-block">
+              <p class="eyebrow">本地文件</p>
+              <dl>
+                <div>
+                  <dt>加密配置</dt>
+                  <dd>data/sites.json</dd>
+                </div>
+                <div>
+                  <dt>启动器</dt>
+                  <dd>bin/run-wordpress-mcp.js</dd>
+                </div>
+                <div>
+                  <dt>用户与地址</dt>
+                  <dd>data/users.json · data/runtime.json</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="detail-block">
+              <p class="eyebrow">本地用户</p>
+              <div class="user-list" id="userList"></div>
+              <form class="user-form" id="userForm" autocomplete="off">
+                <input id="newUsernameInput" type="text" placeholder="新管理员用户名" autocomplete="off" />
+                <input id="newPasswordInput" type="password" placeholder="至少 6 位密码" autocomplete="new-password" />
+                <button class="ghost-button" type="submit">添加用户</button>
+              </form>
+            </div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

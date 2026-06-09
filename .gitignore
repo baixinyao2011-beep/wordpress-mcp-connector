@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+.env
+data/
+.wp-connector-key
+*.log
+*.zip
+!wordpress-plugin/wordpress-mcp-connector-companion.zip
+dist/
